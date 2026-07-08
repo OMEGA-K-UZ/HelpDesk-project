@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HelpDesk — eMaktab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070b14;--bg2:#0d1322;--bg3:#131b2e;--bg4:#1a2540;--bg5:#212d4d;
+  --border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.1);
+  --text:#e4eaf5;--text2:#7e8ba8;--text3:#404d6b;
+  --accent:#4f8ef7;--accent2:#3b7ae8;--accent-dim:rgba(79,142,247,0.1);
+  --success:#22c55e;--danger:#ef4444;--warning:#f59e0b;--info:#38bdf8;--purple:#a855f7;--teal:#14b8a6;--pink:#ec4899;
+  --grad1:linear-gradient(135deg,#4f8ef7,#6366f1);--grad2:linear-gradient(135deg,#22c55e,#14b8a6);
+  --grad3:linear-gradient(135deg,#f59e0b,#ef4444);--grad4:linear-gradient(135deg,#a855f7,#ec4899);
+  --r:12px;--r-sm:8px;--r-lg:16px;--sidebar:236px;
+}
+/* THEME: Slate (нейтральная тёмно-серая) */
+[data-theme="slate"]{
+  --bg:#0c0e12;--bg2:#15181f;--bg3:#1c2029;--bg4:#252a35;--bg5:#2f3543;
+  --accent:#6b7fd7;--accent2:#5868c0;--accent-dim:rgba(107,127,215,0.12);
+  --grad1:linear-gradient(135deg,#6b7fd7,#8b6dd7);
+}
+/* THEME: Emerald (тёмная с зелёным) */
+[data-theme="emerald"]{
+  --bg:#06120d;--bg2:#0c1c15;--bg3:#11271d;--bg4:#193528;--bg5:#214534;
+  --accent:#10b981;--accent2:#059669;--accent-dim:rgba(16,185,129,0.12);
+  --grad1:linear-gradient(135deg,#10b981,#14b8a6);
+}
+/* THEME: Royal (тёмная с фиолетовым) */
+[data-theme="royal"]{
+  --bg:#0c0818;--bg2:#161024;--bg3:#1f1733;--bg4:#2a1f45;--bg5:#372a58;
+  --accent:#a855f7;--accent2:#9333ea;--accent-dim:rgba(168,85,247,0.12);
+  --grad1:linear-gradient(135deg,#a855f7,#ec4899);
+}
+/* THEME: Light (светлая) */
+[data-theme="light"]{
+  --bg:#f1f4f9;--bg2:#ffffff;--bg3:#f0f3f8;--bg4:#e4e9f2;--bg5:#d8dfec;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a2233;--text2:#5a6680;--text3:#9aa6bf;
+  --accent:#3b7ae8;--accent2:#2563eb;--accent-dim:rgba(59,122,232,0.1);
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] .topbar{background:rgba(241,244,249,.85)}
+[data-theme="light"] #login-page{background:var(--bg)}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}button{font-family:inherit;cursor:pointer}
+.mono{font-family:'JetBrains Mono',monospace}
+.ic{display:inline-block;vertical-align:middle;flex-shrink:0}
+.sb-item .ic{width:18px;height:18px}
+
+/* LOGIN */
+#login-page{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+#login-page::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 40% at 50% 30%,rgba(79,142,247,0.1),transparent 70%)}
+.login-box{position:relative;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:40px 36px;width:100%;max-width:380px}
+.login-logo{width:56px;height:56px;border-radius:14px;background:var(--grad1);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 20px}
+.login-box h1{font-size:22px;font-weight:800;text-align:center;letter-spacing:-.02em;margin-bottom:4px}
+.login-box .sub{color:var(--text2);text-align:center;font-size:13px;margin-bottom:28px}
+
+/* LAYOUT */
+#app{display:none}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100}
+.sb-head{padding:18px 16px;border-bottom:1px solid var(--border)}
+.sb-brand{font-size:15px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.sb-brand .ico{width:32px;height:32px;border-radius:9px;background:var(--grad1);display:flex;align-items:center;justify-content:center;font-size:15px}
+.sb-sec{padding:14px 16px 5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 13px;border-radius:9px;margin:1px 9px;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.sb-item:hover{background:var(--bg3);color:var(--text)}
+.sb-item.active{background:var(--accent-dim);color:var(--accent)}
+.sb-item .ico{font-size:15px;width:18px;text-align:center}
+.sb-item .badge{margin-left:auto;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sb-bottom{margin-top:auto;padding:11px;border-top:1px solid var(--border)}
+.user-chip{display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px;cursor:pointer}
+.user-chip:hover{background:var(--bg3)}
+.avatar{border-radius:50%;background:var(--grad1);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;width:32px;height:32px;font-size:12px}
+.avatar.sm{width:24px;height:24px;font-size:10px}
+
+.main{flex:1;margin-left:var(--sidebar);display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:rgba(7,11,20,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.content{flex:1;padding:24px 26px}
+.view{display:none;animation:fade .3s ease}.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PERIOD SELECTOR */
+.period-bar{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.period-quick{display:flex;gap:5px}
+.dash-tabs{display:flex;gap:6px;background:var(--bg2);padding:4px;border-radius:10px;border:1px solid var(--border)}
+.dash-tab{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;color:var(--text2);background:transparent;border:none;transition:all .15s}
+.dash-tab.active{background:var(--bg4);color:var(--text)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;cursor:pointer}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.c-blue::before{background:var(--grad1)}.stat-card.c-green::before{background:var(--grad2)}.stat-card.c-orange::before{background:var(--grad3)}.stat-card.c-purple::before{background:var(--grad4)}.stat-card.c-red::before{background:linear-gradient(135deg,#ef4444,#dc2626)}.stat-card.c-teal::before{background:linear-gradient(135deg,#14b8a6,#0891b2)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.stat-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.stat-ico{font-size:18px;opacity:.9}
+.stat-val{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:5px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+
+/* INVENTORY DASHBOARD CARDS */
+.inv-dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+.inv-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:all .2s}
+.inv-card:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 12px 32px rgba(0,0,0,.3)}
+.inv-card-glow{position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;opacity:.12;filter:blur(20px)}
+.inv-card-ico{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
+.inv-card-num{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.inv-card-name{font-size:14px;font-weight:600;color:var(--text2);margin-top:4px}
+.inv-card-stats{display:flex;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.inv-card-stat{font-size:11px}
+.inv-card-stat .n{font-size:15px;font-weight:700;display:block}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut{position:relative;width:130px;height:130px;flex-shrink:0}
+.donut svg{transform:rotate(-90deg)}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-center .num{font-size:24px;font-weight:800}
+.donut-center .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:8px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.legend-val{margin-left:auto;font-weight:700}
+
+/* BAR CHART */
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:12px}
+.bar-lbl{width:120px;font-size:12px;color:var(--text2);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.bar-track{flex:1;height:10px;background:var(--bg3);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar-val{width:34px;font-size:12px;font-weight:700;text-align:right;flex-shrink:0}
+
+/* COLUMN CHART (daily) */
+.col-chart{display:flex;align-items:flex-end;gap:4px;height:140px;padding-top:10px}
+.col-bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}
+.col-fill{width:100%;max-width:28px;border-radius:4px 4px 0 0;background:var(--grad1);transition:height .6s ease;min-height:2px}
+.col-lbl{font-size:9px;color:var(--text3);white-space:nowrap}
+
+/* TABLE */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:11px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--text2)}
+tbody tr{transition:background .1s;cursor:pointer}
+tbody tr:hover{background:var(--bg3)}
+tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-open{background:rgba(79,142,247,.12);color:#60a5fa}.b-in_progress{background:rgba(245,158,11,.12);color:#fbbf24}
+.b-waiting{background:rgba(168,85,247,.12);color:#c084fc}.b-resolved{background:rgba(34,197,94,.12);color:#4ade80}
+.b-closed{background:rgba(100,116,139,.12);color:#94a3b8}.b-planned{background:rgba(20,184,166,.12);color:#2dd4bf}
+.b-low{background:rgba(34,197,94,.12);color:#4ade80}.b-medium{background:rgba(245,158,11,.12);color:#fbbf24}
+.b-high{background:rgba(239,68,68,.12);color:#f87171}.b-critical{background:rgba(239,68,68,.2);color:#ef4444}
+
+/* FORMS */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.fgrid.g3{grid-template-columns:1fr 1fr 1fr}
+.fgroup{display:flex;flex-direction:column;gap:5px}.fgroup.full{grid-column:1/-1}
+label{font-size:12px;font-weight:600;color:var(--text2)}.req{color:var(--danger)}
+input,textarea,select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:13px;color:var(--text);outline:none;width:100%;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{border-color:rgba(79,142,247,.5);box-shadow:0 0 0 3px rgba(79,142,247,.08)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+textarea{resize:vertical;min-height:80px}select option{background:var(--bg2)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:600;border:none;transition:all .15s;letter-spacing:-.01em}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-success{background:rgba(34,197,94,.1);color:var(--success);border:1px solid rgba(34,197,94,.2)}
+.btn-warning{background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)}
+.btn-sm{padding:5px 12px;font-size:12px}.btn-icon{width:32px;height:32px;padding:0}
+.btn:disabled{opacity:.45;pointer-events:none}
+
+/* FILTERS */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all .15s}
+.filter-btn:hover{background:var(--bg2);color:var(--text)}.filter-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.search-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 13px;font-size:13px;color:var(--text);outline:none;width:240px}
+.search-box:focus{border-color:rgba(79,142,247,.4)}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--text2)}
+.page-btns{display:flex;gap:5px}
+.page-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.page-btn:hover{background:var(--bg3);color:var(--text)}.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}.page-btn:disabled{opacity:.3;pointer-events:none}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);width:100%;max-height:90vh;overflow-y:auto;transform:translateY(14px);transition:transform .2s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-header h3{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.modal-body{padding:20px 22px}
+
+/* TICKET DETAIL */
+.ticket-layout{display:grid;grid-template-columns:1fr 310px;gap:20px;align-items:start}
+.comment{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.comment.internal{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.05)}
+.comment-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.comment-meta{font-size:12px;color:var(--text3);margin-left:auto}
+.comment-body{font-size:14px;line-height:1.6;white-space:pre-wrap}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}.info-lbl{color:var(--text2);font-size:12px}
+.history-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)}
+.history-item:last-child{border-bottom:none}
+.h-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:4px;flex-shrink:0}
+
+/* ALERT */
+.alert{padding:10px 14px;border-radius:var(--r-sm);font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.alert-ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:var(--success)}
+.alert-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;pointer-events:none}
+.toast-item{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:12px 16px;margin-top:8px;font-size:13px;display:flex;align-items:center;gap:10px;animation:slideIn .3s ease;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@keyframes slideIn{from{transform:translateX(110%)}to{transform:translateX(0)}}
+
+/* TABS */
+.stab{display:none}.stab.active{display:block}
+
+/* TOGGLE */
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{display:none}
+.toggle-slider{position:absolute;inset:0;background:var(--bg4);border-radius:20px;transition:.2s;cursor:pointer}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--accent)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px)}
+
+/* MD EDITOR */
+.md-editor{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm)}
+.md-toolbar{padding:8px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
+.md-btn{background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);padding:4px 9px;font-size:12px;font-family:'JetBrains Mono',monospace}
+.md-btn:hover{color:var(--text)}
+.md-ta{width:100%;background:transparent;border:none;padding:12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:300px}
+
+.empty{padding:48px;text-align:center;color:var(--text3)}.empty .e-ico{font-size:36px;margin-bottom:12px}
+.bulk-bar{display:none;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--accent);border-radius:var(--r);padding:10px 16px;margin-bottom:14px;flex-wrap:wrap}
+tbody tr.row-sel{background:var(--accent-dim)!important}
+.t-chk,#t-chk-all{width:16px;height:16px;cursor:pointer;accent-color:var(--accent)}
+.new-dot{width:9px;height:9px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:dotPulse 1.8s infinite}
+.theme-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;cursor:pointer;transition:background .15s}
+.theme-opt:hover{background:var(--bg3)}
+.theme-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.cd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cd-widget{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;position:relative;transition:border-color .2s}
+.cd-widget.w-1{grid-column:span 1}.cd-widget.w-2{grid-column:span 2}.cd-widget.w-3{grid-column:span 3}
+.cd-widget[draggable=true]{cursor:grab}
+.w-edit{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px 5px;z-index:2}
+.w-drag{cursor:grab;color:var(--text3);font-size:14px;padding:0 2px}
+@media(max-width:980px){.cd-grid{grid-template-columns:1fr}.cd-widget.w-1,.cd-widget.w-2,.cd-widget.w-3{grid-column:span 1}}
+@keyframes dotPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);border:1px solid rgba(79,142,247,.2);color:var(--accent);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* NOTIF PANEL */
+.notif-panel{position:absolute;top:46px;right:0;width:340px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 16px 40px rgba(0,0,0,.5);z-index:100;max-height:420px;overflow-y:auto;display:none}
+.notif-panel.open{display:block}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--border)}
+.notif-item:hover{background:var(--bg3)}.notif-item.unread{border-left:2px solid var(--accent)}
+.notif-title{font-size:13px;font-weight:600;margin-bottom:3px}.notif-body{font-size:12px;color:var(--text2)}.notif-time{font-size:11px;color:var(--text3);margin-top:3px}
+
+@media(max-width:980px){:root{--sidebar:56px}.sb-item span:not(.ico),.sb-sec,.sb-brand span:not(.ico){display:none}.grid-2,.grid-3{grid-template-columns:1fr}.ticket-layout{grid-template-columns:1fr}.fgrid,.fgrid.g3{grid-template-columns:1fr}.content{padding:16px}}
+</style>
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo" id="login-logo">🎫</div>
+    <h1 id="login-title">HelpDesk</h1>
+    <div class="sub">eMaktab — система поддержки</div>
+    <div id="login-alert"></div>
+    <div class="fgroup" style="margin-bottom:12px"><label>Email</label><input type="email" id="l-email" value="admin@helpdesk.local"></div>
+    <div class="fgroup" style="margin-bottom:20px"><label>Пароль</label><input type="password" id="l-pass" value="admin123" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="login()">Войти</button>
+  </div>
+</div>
+
+<div id="app"><div class="layout">
+<aside class="sidebar">
+  <div class="sb-head"><div class="sb-brand"><div class="ico" id="sb-logo">🎫</div><span id="sb-brand-name">HelpDesk</span></div></div>
+  <div class="sb-sec">Работа</div>
+  <div class="sb-item active" data-nav="dashboard" onclick="nav('dashboard')"><span class="ico" data-ic="dashboard"></span><span>Дашборд</span></div>
+  <div class="sb-item" data-nav="customdash" onclick="nav('customdash')"><span class="ico" data-ic="puzzle"></span><span>Мои дашборды</span></div>
+  <div class="sb-item" data-nav="tickets" onclick="nav('tickets')"><span class="ico" data-ic="ticket"></span><span>Тикеты</span><span class="badge" id="sb-open" style="display:none">0</span></div>
+  <div class="sb-item" onclick="nav('tickets');setTimeout(()=>{document.querySelector('#view-tickets .filter-btn[data-st=me]')?.click()},100)"><span class="ico" data-ic="user"></span><span>Мои тикеты</span></div>
+  <div class="sb-sec">Контент</div>
+  <div class="sb-item" data-nav="kb" onclick="nav('kb')"><span class="ico" data-ic="book"></span><span>База знаний</span></div>
+  <div class="sb-sec">Ресурсы</div>
+  <div class="sb-item" data-nav="inventory" onclick="nav('inventory')"><span class="ico" data-ic="box"></span><span>Инвентаризация</span></div>
+  <div class="sb-item" data-nav="contacts" onclick="nav('contacts')"><span class="ico" data-ic="contacts"></span><span>Пользователи</span></div>
+  <div class="sb-item" id="mgmt-toggle" onclick="toggleMgmtMenu()"><span class="ico" data-ic="folder"></span><span style="flex:1">Управление</span><span id="mgmt-caret" style="transition:transform .2s;display:flex" data-ic="caret"></span></div>
+  <div id="mgmt-submenu" style="display:none"></div>
+  <div class="sb-sec">Аналитика</div>
+  <div class="sb-item" data-nav="analytics" onclick="nav('analytics')"><span class="ico" data-ic="chart"></span><span>Отчёты</span></div>
+  <div class="sb-sec admin-only">Управление</div>
+  <div class="sb-item admin-only" data-nav="users" onclick="nav('users')"><span class="ico" data-ic="users"></span><span>Агенты</span></div>
+  <div class="sb-item admin-only" data-nav="settings" onclick="nav('settings')"><span class="ico" data-ic="settings"></span><span>Настройки</span></div>
+  <div class="sb-bottom"><div class="user-chip" onclick="nav('profile')"><div class="avatar" id="sb-av">?</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="sb-name">...</div><div style="font-size:11px;color:var(--text3)" id="sb-role">...</div></div></div></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn btn-ghost btn-icon" id="nav-back" onclick="navBack()" title="Назад" style="opacity:.5" data-ic="back"></button>
+      <button class="btn btn-ghost btn-icon" id="nav-fwd" onclick="navForward()" title="Вперёд" style="opacity:.5" data-ic="fwd"></button>
+      <div class="topbar-title" id="tb-title">Дашборд</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" id="btn-new-ticket" onclick="openNewTicket()" style="display:none">+ Тикет</button>
+      <div style="position:relative">
+        <button class="btn btn-ghost btn-icon" onclick="toggleThemeMenu()" title="Тема оформления" data-ic="palette"></button>
+        <div class="notif-panel" id="theme-panel" style="width:200px">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Тема оформления</div>
+          <div class="theme-opt" onclick="setTheme('')"><span class="theme-dot" style="background:#4f8ef7"></span>Midnight</div>
+          <div class="theme-opt" onclick="setTheme('slate')"><span class="theme-dot" style="background:#6b7fd7"></span>Slate</div>
+          <div class="theme-opt" onclick="setTheme('emerald')"><span class="theme-dot" style="background:#10b981"></span>Emerald</div>
+          <div class="theme-opt" onclick="setTheme('royal')"><span class="theme-dot" style="background:#a855f7"></span>Royal</div>
+          <div class="theme-opt" onclick="setTheme('light')"><span class="theme-dot" style="background:#e4e9f2;border:1px solid #ccc"></span>Light (светлая)</div>
+        </div>
+      </div>
+      <div style="position:relative">
+        <button class="btn btn-ghost btn-icon" onclick="toggleNotif()" data-ic="bell"><span id="notif-count" style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;display:none">0</span></button>
+        <div class="notif-panel" id="notif-panel">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700">Уведомления</span><button class="btn btn-ghost btn-sm" onclick="readAllNotif()">Прочитать все</button></div>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-icon" onclick="logout()" title="Выход" data-ic="logout"></button>
+    </div>
+  </div>
+  <div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="period-bar">
+      <div class="dash-tabs">
+        <button class="dash-tab active" data-dt="tickets" onclick="setDashTab('tickets',this)">🎫 Тикеты</button>
+        <button class="dash-tab" data-dt="inventory" onclick="setDashTab('inventory',this)">📦 Склад</button>
+        <button class="dash-tab" data-dt="mgmt" onclick="setDashTab('mgmt',this)">🗂 Управление</button>
+        <button class="dash-tab" data-dt="analytics" onclick="setDashTab('analytics',this)">📈 Аналитика</button>
+      </div>
+      <div style="margin-left:auto" class="period-quick">
+        <button class="filter-btn active" onclick="setPeriod('today',this)">Сегодня</button>
+        <button class="filter-btn" onclick="setPeriod('week',this)">Неделя</button>
+        <button class="filter-btn" onclick="setPeriod('month',this)">Месяц</button>
+        <button class="filter-btn" onclick="setPeriod('quarter',this)">Квартал</button>
+        <button class="filter-btn" onclick="setPeriod('year',this)">Год</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="date" id="period-from" style="width:140px" onchange="customPeriod()">
+        <span style="color:var(--text3)">—</span>
+        <input type="date" id="period-to" style="width:140px" onchange="customPeriod()">
+      </div>
+    </div>
+    <div id="dash-content"></div>
+  </div>
+
+  <!-- CUSTOM DASHBOARDS (конструктор) -->
+  <div class="view" id="view-customdash">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+      <div class="dash-tabs" id="cd-tabs" style="flex-wrap:wrap"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addDashboard()">+ Дашборд</button>
+      <div style="margin-left:auto;display:flex;gap:8px" id="cd-actions"></div>
+    </div>
+    <div id="cd-content"><div class="empty"><div class="e-ico">🧩</div>Создайте свой первый дашборд</div></div>
+  </div>
+
+  <div class="view" id="view-tickets">
+    <div class="filters">
+      <button class="filter-btn active" data-st="all" onclick="setTF('all',this)">Все</button>
+      <button class="filter-btn" data-st="open" onclick="setTF('open',this)">📬 Открытые</button>
+      <button class="filter-btn" data-st="in_progress" onclick="setTF('in_progress',this)">🔄 В работе</button>
+      <button class="filter-btn" data-st="waiting" onclick="setTF('waiting',this)">⏳ Ожидают</button>
+      <button class="filter-btn" data-st="resolved" onclick="setTF('resolved',this)">✅ Решённые</button>
+      <button class="filter-btn" data-st="closed" onclick="setTF('closed',this)">🔒 Закрытые</button>
+      <button class="filter-btn" data-st="planned" onclick="setTF('planned',this)">📅 Запланированные</button>
+      <button class="filter-btn" data-st="deleted" onclick="setTF('deleted',this)">🗑 Корзина</button>
+      <button class="filter-btn" data-st="me" onclick="setTF('me',this)" style="display:none">👤 Мои</button>
+      <input class="search-box" placeholder="🔍 Поиск..." oninput="searchT(this.value)" style="margin-left:auto">
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th style="width:36px;text-align:center"><input type="checkbox" id="t-chk-all" onclick="toggleSelAll()" title="Выбрать все"></th>
+        <th onclick="sortT('number')">#</th><th>Тема</th><th>Заявитель</th>
+        <th onclick="sortT('priority')">Приоритет</th><th>Статус</th><th>Агент</th>
+        <th onclick="sortT('created_at')">Дата</th><th></th>
+      </tr></thead><tbody id="t-tbody"></tbody></table>
+      <div class="pagination" id="t-pag"></div>
+    </div>
+  </div>
+
+  <!-- TICKET DETAIL -->
+  <div class="view" id="view-td">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="nav('tickets')">← Назад</button>
+      <h2 style="font-size:17px;font-weight:700" id="td-title">Тикет</h2>
+      <span id="td-sb"></span><span id="td-pb"></span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-success btn-sm" onclick="quickStatus('resolved')">✅ Решено</button>
+        <button class="btn btn-warning btn-sm" onclick="quickStatus('waiting')">⏳ Ожидание</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickStatus('closed')">🔒 Закрыть</button>
+      </div>
+    </div>
+    <div class="ticket-layout">
+      <div>
+        <div class="card" style="margin-bottom:14px"><div id="td-desc" style="font-size:14px;line-height:1.7;color:var(--text2);white-space:pre-wrap"></div></div>
+        <div id="td-comments"></div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">Ответить</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button class="filter-btn active" id="rep-pub" onclick="setRT(false,this)">📤 Ответ клиенту</button>
+            <button class="filter-btn" id="rep-int" onclick="setRT(true,this)">🔒 Внутренняя заметка</button>
+          </div>
+          <div class="md-toolbar" style="border:1px solid var(--border);border-bottom:none;border-radius:var(--r-sm) var(--r-sm) 0 0;background:var(--bg3)">
+            <button class="md-btn" onclick="repIns('**','**')" title="Жирный">B</button>
+            <button class="md-btn" onclick="repIns('*','*')" title="Курсив">I</button>
+            <button class="md-btn" onclick="repIns('\n- ','')" title="Список">• список</button>
+            <button class="md-btn" onclick="repIns('\n1. ','')" title="Нумерация">1. список</button>
+            <button class="md-btn" onclick="repIns('[','](ссылка)')" title="Ссылка">🔗 ссылка</button>
+          </div>
+          <textarea id="rep-body" placeholder="Напишите ответ..." style="min-height:100px;margin-bottom:10px;border-radius:0 0 var(--r-sm) var(--r-sm)"></textarea>
+          <div id="rep-files-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+          <div id="rep-cc-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer">📎 Файл<input type="file" id="rep-files" multiple style="display:none" onchange="showRepFiles()"></label>
+              <button class="btn btn-ghost btn-sm" onclick="openCc()">➕ Копия (CC)</button>
+              <button class="btn btn-ghost btn-sm" onclick="openForward()">📨 Переслать</button>
+            </div>
+            <button class="btn btn-primary" onclick="sendReply()">Отправить</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-head">Свойства</div>
+          <div class="fgroup" style="margin-bottom:10px"><label>Статус</label><select id="td-status" onchange="updTF('status',this.value)"><option value="open">📬 Открыт</option><option value="in_progress">🔄 В работе</option><option value="waiting">⏳ Ожидание</option><option value="resolved">✅ Решён</option><option value="closed">🔒 Закрыт</option><option value="planned">📅 Запланирован</option></select></div>
+          <div class="fgroup" style="margin-bottom:10px"><label>Приоритет</label><select id="td-priority" onchange="updTF('priority',this.value)"><option value="low">🟢 Низкий</option><option value="medium">🟡 Средний</option><option value="high">🟠 Высокий</option><option value="critical">🔴 Критический</option></select></div>
+          <div class="fgroup" style="margin-bottom:10px"><label>Назначен</label><select id="td-agent" onchange="updTF('assigned_to',this.value)"></select></div>
+          <div class="fgroup"><label>Категория</label><select id="td-cat" onchange="updTF('category_id',this.value)"></select></div>
+        </div>
+        <div class="card" style="margin-bottom:14px"><div class="card-head">Заявитель</div><div id="td-req"></div></div>
+        <div class="card" style="margin-bottom:14px"><div class="card-head">SLA</div><div id="td-sla"></div></div>
+        <div class="card"><div class="card-head">История <span style="cursor:pointer;font-size:11px;color:var(--accent)" onclick="document.getElementById('td-hist').style.display=document.getElementById('td-hist').style.display==='none'?'block':'none'">показать</span></div><div id="td-hist" style="display:none"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KB -->
+  <div class="view" id="view-kb">
+    <div class="filters">
+      <input class="search-box" placeholder="🔍 Поиск по статьям..." oninput="searchKb(this.value)">
+      <select id="kb-cat-filter" onchange="loadKbArt()" style="width:auto"><option value="">Все категории</option></select>
+      <button class="filter-btn" id="kb-pub" onclick="kbPub=!kbPub;this.classList.toggle('active',kbPub);loadKbArt()">Только опубликованные</button>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openKbEditor()">+ Статья</button>
+    </div>
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:18px">
+      <div class="card"><div class="card-head">Категории</div><div id="kb-cats"></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Статья</th><th>Категория</th><th>Автор</th><th>Просмотры</th><th>Статус</th><th></th></tr></thead><tbody id="kb-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="view" id="view-inventory">
+    <div class="filters">
+      <button class="filter-btn active" data-inv="all" onclick="setInvF('all',this)">Все</button>
+      <button class="filter-btn" data-inv="available" onclick="setInvF('available',this)">✅ Свободно</button>
+      <button class="filter-btn" data-inv="assigned" onclick="setInvF('assigned',this)">👤 Выдано</button>
+      <button class="filter-btn" data-inv="maintenance" onclick="setInvF('maintenance',this)">🔧 Ремонт</button>
+      <button class="filter-btn" data-inv="retired" onclick="setInvF('retired',this)">🗄 Списано</button>
+      <input class="search-box" placeholder="🔍 Поиск..." oninput="searchInv(this.value)">
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openInv()">+ Добавить</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Название</th><th>Артикул / S/N</th><th>Категория</th><th>Статус</th><th>Кому выдано</th><th>Местоположение</th><th>Гарантия</th><th></th></tr></thead><tbody id="inv-tbody"></tbody></table><div class="pagination" id="inv-pag"></div></div>
+  </div>
+
+  <!-- CONTACTS (Пользователи) -->
+  <div class="view" id="view-contacts">
+    <div class="filters">
+      <input class="search-box" placeholder="🔍 Поиск по имени, email, компании..." oninput="searchContacts(this.value)">
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openContact()">+ Добавить пользователя</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Имя</th><th>Email</th><th>Телефон</th><th>Компания</th><th>Должность</th><th></th></tr></thead><tbody id="contacts-tbody"></tbody></table></div>
+  </div>
+
+  <!-- MANAGEMENT (Управление) -->
+  <div class="view" id="view-mgmt">
+    <div id="mgmt-main">
+      <div class="empty"><div class="e-ico">🗂</div>Выберите раздел в меню слева</div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="view" id="view-analytics">
+    <div class="period-bar">
+      <div class="period-quick">
+        <button class="filter-btn active" onclick="setAPeriod('month',this)">Месяц</button>
+        <button class="filter-btn" onclick="setAPeriod('quarter',this)">Квартал</button>
+        <button class="filter-btn" onclick="setAPeriod('year',this)">Год</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="date" id="a-from" style="width:140px" onchange="customAPeriod()">
+        <span style="color:var(--text3)">—</span>
+        <input type="date" id="a-to" style="width:140px" onchange="customAPeriod()">
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="exportData('csv')">⬇ CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportData('xlsx')">⬇ Excel</button>
+      </div>
+    </div>
+    <div id="analytics-content"></div>
+  </div>
+
+  <!-- USERS -->
+  <div class="view" id="view-users">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary" onclick="openUser()">+ Добавить агента</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Агент</th><th>Email</th><th>Роль</th><th>Отдел</th><th>Telegram</th><th>Вход</th><th>Статус</th><th></th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="view" id="view-settings">
+    <div class="filters" id="settings-tabs">
+      <button class="filter-btn active" onclick="setStab('general',this)">⚙️ Общие</button>
+      <button class="filter-btn" onclick="setStab('telegram',this)">✈️ Telegram</button>
+      <button class="filter-btn" onclick="setStab('email',this)">📧 Email</button>
+      <button class="filter-btn" onclick="setStab('templates',this)">✉️ Шаблоны</button>
+      <button class="filter-btn" onclick="setStab('automation',this)">🤖 Автоматизация</button>
+      <button class="filter-btn" onclick="setStab('escalation',this)">🚨 Эскалация</button>
+      <button class="filter-btn" onclick="setStab('sla',this)">⏱ SLA</button>
+      <button class="filter-btn" onclick="setStab('invcats',this)">📦 Категории техники</button>
+      <button class="filter-btn" onclick="setStab('departments',this)">🏢 Отделы</button>
+      <button class="filter-btn" onclick="setStab('categories',this)">🏷 Категории</button>
+    </div>
+    <div id="stab-general" class="stab active"></div>
+    <div id="stab-telegram" class="stab"></div>
+    <div id="stab-email" class="stab"></div>
+    <div id="stab-templates" class="stab"></div>
+    <div id="stab-automation" class="stab"></div>
+    <div id="stab-escalation" class="stab"></div>
+    <div id="stab-sla" class="stab"></div>
+    <div id="stab-invcats" class="stab"></div>
+    <div id="stab-departments" class="stab"></div>
+    <div id="stab-categories" class="stab"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="view" id="view-profile">
+    <div style="max-width:500px">
+      <div class="card" style="margin-bottom:16px"><div class="card-head">Профиль</div>
+        <div class="fgroup" style="margin-bottom:12px"><label>Имя</label><input type="text" id="p-name"></div>
+        <div class="fgroup" style="margin-bottom:12px"><label>Telegram ID</label><input type="text" id="p-tg" placeholder="123456789"></div>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Сохранить</button>
+      </div>
+      <div class="card"><div class="card-head">Сменить пароль</div>
+        <div class="fgroup" style="margin-bottom:12px"><label>Текущий пароль</label><input type="password" id="p-cur"></div>
+        <div class="fgroup" style="margin-bottom:16px"><label>Новый пароль</label><input type="password" id="p-new"></div>
+        <button class="btn btn-primary" onclick="changePass()">🔒 Изменить</button>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+</div></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="m-newticket" onclick="if(event.target===this)closeM('m-newticket')"><div class="modal" style="max-width:640px"><div class="modal-header"><h3>Новый тикет</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-newticket')">✕</button></div><div class="modal-body">
+  <div class="fgrid" style="margin-bottom:12px">
+    <div class="fgroup"><label>Имя заявителя</label><input type="text" id="nt-name"></div>
+    <div class="fgroup"><label>Email</label><input type="email" id="nt-email"></div>
+    <div class="fgroup full"><label>Тема <span class="req">*</span></label><input type="text" id="nt-subj"></div>
+    <div class="fgroup full"><label>Описание</label><textarea id="nt-desc"></textarea></div>
+    <div class="fgroup"><label>Приоритет</label><select id="nt-prio"><option value="low">🟢 Низкий</option><option value="medium" selected>🟡 Средний</option><option value="high">🟠 Высокий</option><option value="critical">🔴 Критический</option></select></div>
+    <div class="fgroup"><label>Источник</label><select id="nt-src"><option value="web">🌐 Веб</option><option value="email">📧 Email</option><option value="phone">📞 Телефон</option></select></div>
+    <div class="fgroup"><label>Агент</label><select id="nt-agent"><option value="">— Не назначен —</option></select></div>
+    <div class="fgroup"><label>Категория</label><select id="nt-cat"><option value="">— Без категории —</option></select></div>
+  </div>
+  <button class="btn btn-primary" style="width:100%" onclick="createTicket()">🎫 Создать</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-user" onclick="if(event.target===this)closeM('m-user')"><div class="modal" style="max-width:460px"><div class="modal-header"><h3 id="m-user-title">Новый агент</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-user')">✕</button></div><div class="modal-body">
+  <div class="fgrid" style="margin-bottom:12px">
+    <div class="fgroup"><label>Имя</label><input type="text" id="u-name"></div>
+    <div class="fgroup"><label>Email <span class="req">*</span></label><input type="email" id="u-email"></div>
+    <div class="fgroup"><label>Пароль</label><input type="password" id="u-pass" placeholder="мин. 6 символов"></div>
+    <div class="fgroup"><label>Роль</label><select id="u-role"><option value="agent">Агент</option><option value="admin">Администратор</option><option value="viewer">Просмотр</option></select></div>
+    <div class="fgroup"><label>Отдел</label><input type="text" id="u-dept"></div>
+    <div class="fgroup"><label>Telegram ID</label><input type="text" id="u-tg"></div>
+  </div>
+  <div id="u-alert"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="saveUser()">💾 Сохранить</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-kb" onclick="if(event.target===this)closeM('m-kb')"><div class="modal" style="max-width:760px"><div class="modal-header"><h3 id="m-kb-title">Новая статья</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-kb')">✕</button></div><div class="modal-body">
+  <div class="fgrid" style="margin-bottom:12px">
+    <div class="fgroup full"><label>Заголовок <span class="req">*</span></label><input type="text" id="kb-title"></div>
+    <div class="fgroup"><label>Категория</label><select id="kb-cat"><option value="">— Без категории —</option></select></div>
+    <div class="fgroup" style="flex-direction:row;align-items:center;gap:10px"><label class="toggle"><input type="checkbox" id="kb-published"><span class="toggle-slider"></span></label><label>Опубликовать</label></div>
+  </div>
+  <div class="md-editor"><div class="md-toolbar">
+    <button class="md-btn" onclick="mdIns('**','**')">B</button><button class="md-btn" onclick="mdIns('*','*')">I</button>
+    <button class="md-btn" onclick="mdIns('## ','')">H</button><button class="md-btn" onclick="mdIns('`','`')">code</button>
+    <button class="md-btn" onclick="mdIns('- ','')">list</button><button class="md-btn" onclick="mdIns('[','](url)')">link</button>
+  </div><textarea class="md-ta" id="kb-body" placeholder="Markdown..."></textarea></div>
+  <div style="margin-top:14px;display:flex;gap:10px"><button class="btn btn-primary" onclick="saveKb()">💾 Сохранить</button><button class="btn btn-ghost" onclick="closeM('m-kb')">Отмена</button></div>
+</div></div></div>
+
+<div class="modal-overlay" id="m-inv" onclick="if(event.target===this)closeM('m-inv')"><div class="modal" style="max-width:620px"><div class="modal-header"><h3 id="m-inv-title">Новый объект</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-inv')">✕</button></div><div class="modal-body">
+  <div class="fgrid" style="margin-bottom:12px">
+    <div class="fgroup full"><label>Название <span class="req">*</span></label><input type="text" id="i-name"></div>
+    <div class="fgroup"><label>Серийный номер</label><input type="text" id="i-serial"></div>
+    <div class="fgroup"><label>Инвентарный номер</label><input type="text" id="i-invnum"></div>
+    <div class="fgroup"><label>Артикул (asset tag)</label><input type="text" id="i-asset"></div>
+    <div class="fgroup"><label>Категория</label><select id="i-cat"><option value="">— Выберите —</option></select></div>
+    <div class="fgroup"><label>Статус</label><select id="i-status"><option value="available">✅ Свободно</option><option value="assigned">👤 Выдано</option><option value="maintenance">🔧 Ремонт</option><option value="retired">🗄 Списано</option><option value="lost">❌ Утеряно</option><option value="reserved">📌 Зарезервировано</option></select></div>
+    <div class="fgroup"><label>Производитель</label><input type="text" id="i-mfr" placeholder="Dell, HP, Apple..."></div>
+    <div class="fgroup"><label>Модель</label><input type="text" id="i-model"></div>
+    <div class="fgroup"><label>Местоположение</label><input type="text" id="i-loc"></div>
+    <div class="fgroup"><label>Кому выдано</label><input type="text" id="i-aname"></div>
+    <div class="fgroup"><label>Email сотрудника</label><input type="email" id="i-aemail"></div>
+    <div class="fgroup"><label>Дата покупки</label><input type="date" id="i-pdate"></div>
+    <div class="fgroup"><label>Цена</label><input type="number" id="i-price"></div>
+    <div class="fgroup"><label>Гарантия до</label><input type="date" id="i-warr"></div>
+    <div class="fgroup full"><label>Примечания</label><textarea id="i-notes"></textarea></div>
+  </div>
+  <div id="i-alert"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="saveInv()">💾 Сохранить</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-contact" onclick="if(event.target===this)closeM('m-contact')"><div class="modal" style="max-width:460px"><div class="modal-header"><h3 id="m-contact-title">Новый пользователь</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-contact')">✕</button></div><div class="modal-body">
+  <div class="fgrid" style="margin-bottom:12px">
+    <div class="fgroup full"><label>Имя <span class="req">*</span></label><input type="text" id="ct-name"></div>
+    <div class="fgroup full"><label>Email <span class="req">*</span></label><input type="email" id="ct-email"></div>
+    <div class="fgroup"><label>Телефон</label><input type="text" id="ct-phone"></div>
+    <div class="fgroup"><label>Компания</label><input type="text" id="ct-company"></div>
+    <div class="fgroup full"><label>Должность</label><input type="text" id="ct-position"></div>
+    <div class="fgroup full"><label>Заметки</label><textarea id="ct-notes"></textarea></div>
+  </div>
+  <div id="ct-alert"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="saveContact()">💾 Сохранить</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-cc" onclick="if(event.target===this)closeM('m-cc')"><div class="modal" style="max-width:460px"><div class="modal-header"><h3>Добавить в копию (CC)</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-cc')">✕</button></div><div class="modal-body">
+  <div class="fgroup" style="margin-bottom:12px"><label>Выбрать из пользователей</label><select id="cc-select" onchange="addCcFromSelect()"><option value="">— Выберите —</option></select></div>
+  <div class="fgroup" style="margin-bottom:12px"><label>Или ввести email вручную</label><div style="display:flex;gap:8px"><input type="email" id="cc-manual" placeholder="email@example.com"><button class="btn btn-ghost btn-sm" onclick="addCcManual()">+ Добавить</button></div></div>
+  <div id="cc-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="closeM('m-cc')">Готово</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-forward" onclick="if(event.target===this)closeM('m-forward')"><div class="modal" style="max-width:460px"><div class="modal-header"><h3>Переслать тикет</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-forward')">✕</button></div><div class="modal-body">
+  <div class="fgroup" style="margin-bottom:12px"><label>Кому (из пользователей)</label><select id="fwd-select"><option value="">— Выберите —</option></select></div>
+  <div class="fgroup" style="margin-bottom:12px"><label>Или email вручную</label><input type="email" id="fwd-manual" placeholder="email@example.com"></div>
+  <div class="fgroup" style="margin-bottom:12px"><label>Комментарий (необязательно)</label><textarea id="fwd-note" placeholder="Добавьте сообщение к пересылке..."></textarea></div>
+  <div id="fwd-alert"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="doForward()">📨 Переслать</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-mgmt-rec" onclick="if(event.target===this)closeM('m-mgmt-rec')"><div class="modal" style="max-width:560px"><div class="modal-header"><h3 id="m-mgmt-rec-title">Запись</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-mgmt-rec')">✕</button></div><div class="modal-body">
+  <div id="mgmt-rec-fields"></div>
+  <div id="mgmt-rec-files" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0"></div>
+  <div id="mgmt-rec-alert"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="saveMgmtRecord()">💾 Сохранить</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-mgmt-fields" onclick="if(event.target===this)closeM('m-mgmt-fields')"><div class="modal" style="max-width:520px"><div class="modal-header"><h3>Настройка полей раздела</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-mgmt-fields')">✕</button></div><div class="modal-body">
+  <div id="mgmt-fields-list" style="margin-bottom:16px"></div>
+  <div class="card" style="background:var(--bg3)">
+    <div class="card-head">Добавить поле</div>
+    <div class="fgrid" style="margin-bottom:10px">
+      <div class="fgroup"><label>Название</label><input type="text" id="mf-name" placeholder="Дата истечения"></div>
+      <div class="fgroup"><label>Тип</label><select id="mf-type"><option value="text">Текст</option><option value="number">Число</option><option value="date">Дата</option><option value="textarea">Многострочный</option><option value="file">Файл</option><option value="select">Список</option></select></div>
+      <div class="fgroup full" id="mf-options-wrap" style="display:none"><label>Варианты списка (через запятую)</label><input type="text" id="mf-options" placeholder="Активна, Истекла, Заморожена"></div>
+      <div class="fgroup full" style="flex-direction:row;align-items:center;gap:10px"><label class="toggle"><input type="checkbox" id="mf-required"><span class="toggle-slider"></span></label><label>Обязательное поле</label></div>
+      <div class="fgroup full" id="mf-expiry-wrap" style="display:none;flex-direction:row;align-items:center;gap:10px"><label class="toggle"><input type="checkbox" id="mf-expiry"><span class="toggle-slider"></span></label><label>📅 Это дата истечения (для дашборда)</label></div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="addMgmtField()">+ Добавить поле</button>
+  </div>
+</div></div></div>
+
+<div class="modal-overlay" id="m-widget" onclick="if(event.target===this)closeM('m-widget')"><div class="modal" style="max-width:520px"><div class="modal-header"><h3 id="m-widget-title">Добавить виджет</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-widget')">✕</button></div><div class="modal-body">
+  <div class="fgroup" style="margin-bottom:12px"><label>Тип виджета</label>
+    <select id="w-type" onchange="onWidgetTypeChange()">
+      <option value="counter">🔢 Счётчик (одна цифра)</option>
+      <option value="donut">🍩 Пончик (доли)</option>
+      <option value="bar">📊 Бар-чарт (сравнение)</option>
+      <option value="line">📈 Линия (динамика по дням)</option>
+      <option value="table">📋 Таблица (топ/список)</option>
+      <option value="progress">⏳ Прогресс (проценты)</option>
+    </select>
+  </div>
+  <div class="fgroup" style="margin-bottom:12px"><label>Источник данных</label>
+    <select id="w-source" onchange="onWidgetSourceChange()"></select>
+  </div>
+  <div class="fgroup" style="margin-bottom:12px"><label>Метрика</label>
+    <select id="w-metric"></select>
+  </div>
+  <div class="fgroup" style="margin-bottom:12px"><label>Заголовок (необязательно)</label><input type="text" id="w-title" placeholder="Авто, если пусто"></div>
+  <div class="fgrid" style="margin-bottom:12px">
+    <div class="fgroup"><label>Ширина</label><select id="w-width"><option value="1">1 колонка</option><option value="2">2 колонки</option><option value="3">3 колонки (вся ширина)</option></select></div>
+    <div class="fgroup"><label>Цвет</label><input type="color" id="w-color" value="#4f8ef7" style="height:38px;padding:3px"></div>
+  </div>
+  <div id="w-alert"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="saveWidget()">➕ Добавить на дашборд</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-bot" onclick="if(event.target===this)closeM('m-bot')"><div class="modal" style="max-width:540px"><div class="modal-header"><h3 id="m-bot-title">Новый бот</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-bot')">✕</button></div><div class="modal-body">
+  <div id="bot-editor-body"></div>
+  <button class="btn btn-primary" style="width:100%" onclick="saveBot()">💾 Сохранить бота</button>
+</div></div></div>
+
+<div class="modal-overlay" id="m-schedules" onclick="if(event.target===this)closeM('m-schedules')"><div class="modal" style="max-width:560px"><div class="modal-header"><h3>Запланированные сообщения</h3><button class="btn btn-ghost btn-icon" onclick="closeM('m-schedules')">✕</button></div><div class="modal-body">
+  <div id="schedules-list"></div>
+  <div class="card" style="background:var(--bg3)"><div class="card-head">Новое расписание</div>
+    <div class="fgrid" style="margin-bottom:10px">
+      <div class="fgroup full"><label>Название</label><input id="sc-title" placeholder="Напоминание о выключении техники"></div>
+      <div class="fgroup full"><label>Текст сообщения</label><textarea id="sc-message" placeholder="Уважаемые сотрудники, перед уходом выключите оргтехнику!"></textarea></div>
+      <div class="fgroup"><label>Режим повторения</label><select id="sc-freq" onchange="onSchedFreqChange()">
+        <option value="once">Разово (в дату)</option>
+        <option value="daily">Ежедневно</option>
+        <option value="every_n_days">Каждые N дней</option>
+        <option value="weekly" selected>Еженедельно (день недели)</option>
+        <option value="every_n_weeks">Каждые N недель (день недели)</option>
+        <option value="monthly">Ежемесячно (число)</option>
+        <option value="every_n_months">Каждые N месяцев (число)</option>
+      </select></div>
+      <div class="fgroup"><label>Время</label><input type="time" id="sc-time" value="17:00"></div>
+      <div class="fgroup" id="sc-n-wrap" style="display:none"><label id="sc-n-label">Каждые N</label><input type="number" id="sc-n" min="1" value="2"></div>
+      <div class="fgroup" id="sc-dow-wrap"><label>День недели</label><select id="sc-dow"><option value="1">Понедельник</option><option value="2">Вторник</option><option value="3">Среда</option><option value="4">Четверг</option><option value="5" selected>Пятница</option><option value="6">Суббота</option><option value="0">Воскресенье</option></select></div>
+      <div class="fgroup" id="sc-dom-wrap" style="display:none"><label>Число месяца</label><input type="number" id="sc-dom" min="1" max="31" value="1"></div>
+      <div class="fgroup" id="sc-date-wrap" style="display:none"><label>Дата (разово)</label><input type="date" id="sc-date"></div>
+      <div class="fgroup" id="sc-start-wrap" style="display:none"><label>Дата старта (отсчёт)</label><input type="date" id="sc-start"></div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="addSchedule()">+ Добавить расписание</button>
+  </div>
+</div></div></div>
+
+<div id="toast"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

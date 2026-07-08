@@ -1,0 +1,27 @@
+{
+  "name": "helpdesk-v2",
+  "version": "2.0.0",
+  "description": "eMaktab HelpDesk — Full featured",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "npx nodemon src/server.js",
+    "migrate": "node src/migrate.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "pg": "^8.11.3",
+    "nodemailer": "^6.9.7",
+    "imap": "^0.8.19",
+    "mailparser": "^3.6.5",
+    "node-telegram-bot-api": "^0.64.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "xlsx": "^0.18.5",
+    "uuid": "^9.0.0"
+  }
+}
